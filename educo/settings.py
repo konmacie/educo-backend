@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'django_filters',
+    'apps.records'
 ]
 
 MIDDLEWARE = [
@@ -119,7 +120,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ----------------------- CHANGED SETTINGS ------------------------------------
 
 # Custom user models
-# TODO: AUTH_USER_MODEL = 'accounts.User' 
+AUTH_USER_MODEL = 'records.User'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
