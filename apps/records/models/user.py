@@ -1,9 +1,26 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils.translation import gettext_lazy as _
 from django.utils.text import slugify
 
 import uuid
+
+
+class StudentManager(UserManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            is_teacher=False,
+            is_superuser=False
+        )
+
+
+class TeacherManager(UserManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_teacher=True)
+
+    def create_user(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_teacher', True)
+        return super().create_user(username, email, password, **extra_fields)
 
 
 class User(AbstractUser):
@@ -14,7 +31,7 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         help_text=_(
-            "Required. 150 characters or fewer. "
+            "150 characters or fewer. "
             "Letters, digits and @/./+/-/_ only."
         ),
         validators=[AbstractUser.username_validator],
@@ -70,11 +87,11 @@ class User(AbstractUser):
     def generate_username(self):
         """
         Generate random username based on first_name and uuid4.
-        Generated username: {slugified user.first_name}.{random uuid4[:8]}
+        Generated username: {slugified user.first_name}.{random uuid4[:6]}
         """
         return "{}.{}".format(
             slugify(self.first_name),
-            uuid.uuid4().hex[:8]
+            uuid.uuid4().hex[:6]
         )
 
     def get_full_name(self):
@@ -84,3 +101,21 @@ class User(AbstractUser):
     def __str__(self) -> str:
         """Return full name instead of username"""
         return self.get_full_name()
+
+
+class Student(User):
+    objects = StudentManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = _("Student")
+        verbose_name_plural = _("Students")
+
+
+class Teacher(User):
+    objects = TeacherManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = _("Teacher")
+        verbose_name_plural = _("Teachers")
