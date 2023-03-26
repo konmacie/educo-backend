@@ -6,24 +6,32 @@ from django.utils.text import slugify
 import uuid
 
 
-class StudentManager(UserManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(
-            is_teacher=False,
-            is_superuser=False
-        )
+class Role:
+    STUDENT = 1
+    TEACHER = 2
+    SECRETARY = 3
+    ADMIN = 4
+
+    CHOICES = (
+        (STUDENT, _('Student')),
+        (TEACHER, _('Teacher')),
+        (SECRETARY, _('Secretary')),
+        (ADMIN, _('Admin')),
+    )
 
 
-class TeacherManager(UserManager):
-    def get_queryset(self):
-        return super().get_queryset().filter(is_teacher=True)
+class CustomUserManager(UserManager):
+    def create_superuser(self, username, email=None,
+                         password=None, **extra_fields):
+        extra_fields.setdefault('role', Role.ADMIN)
 
-    def create_user(self, username, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_teacher', True)
-        return super().create_user(username, email, password, **extra_fields)
+        return super().create_superuser(username, email,
+                                        password, **extra_fields)
 
 
 class User(AbstractUser):
+    objects = CustomUserManager()
+
     # Make username not required. If left blank during creation/editing,
     # username will be generated in save() method
     username = models.CharField(
@@ -49,22 +57,15 @@ class User(AbstractUser):
         _('last name'), max_length=150, blank=False, null=False,
         help_text='Required.')
 
-    birth_date = models.DateField(
-        _('Birth date'), blank=True, null=True)
-
-    address = models.CharField(
-        _('Address'), max_length=50, blank=True, null=True)
-    zip_code = models.CharField(
-        _('ZIP code'), max_length=10, blank=True, null=True)
-    city = models.CharField(
-        _('City'), max_length=50, blank=True, null=True)
-    phone = models.CharField(
-        _('Phone number'), max_length=15, blank=True, null=True)
-
-    is_teacher = models.BooleanField(default=False)
+    role = models.PositiveSmallIntegerField(
+        _('role'),
+        choices=Role.CHOICES,
+        default=Role.STUDENT,
+        editable=False,
+    )
 
     # Fields required during createsuperuser
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     class Meta:
         verbose_name = _('user')
@@ -101,21 +102,3 @@ class User(AbstractUser):
     def __str__(self) -> str:
         """Return full name instead of username"""
         return self.get_full_name()
-
-
-class Student(User):
-    objects = StudentManager()
-
-    class Meta:
-        proxy = True
-        verbose_name = _("Student")
-        verbose_name_plural = _("Students")
-
-
-class Teacher(User):
-    objects = TeacherManager()
-
-    class Meta:
-        proxy = True
-        verbose_name = _("Teacher")
-        verbose_name_plural = _("Teachers")

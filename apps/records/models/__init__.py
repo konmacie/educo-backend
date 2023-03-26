@@ -1,1 +1,4 @@
-from .user import User, Teacher, Student
+from .user import User
+from .student import Student
+from .teacher import Teacher
+from .profile import Profile
