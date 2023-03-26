@@ -27,6 +27,23 @@ class CustomUserAdmin(UserAdmin):
                    "is_superuser", "is_active", "groups", "role")
 
 
+class StudentGroupAdmin(admin.ModelAdmin):
+    list_display = ('grade', 'name', 'students_count')
+    list_display_links = ('grade', 'name')
+
+    def students_count(self, obj):
+        return obj.students_count
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).with_students_count()
+
+
+class StudentGroupAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('student', 'group', 'date_start', 'date_end')
+    search_fields = ('student__first_name',
+                     'student__last_name', 'group__name')
+
+
 # class TeacherAdmin(CustomUserAdmin):
 
 #     def get_changeform_initial_data(self, request):
@@ -34,6 +51,7 @@ class CustomUserAdmin(UserAdmin):
 #         initial.setdefault('is_teacher', True)
 #         return initial
 
-
 admin.site.register(models.Teacher, CustomUserAdmin)
 admin.site.register(models.Student, CustomUserAdmin)
+admin.site.register(models.StudentGroup, StudentGroupAdmin)
+admin.site.register(models.StudentGroupAssignment, StudentGroupAssignmentAdmin)

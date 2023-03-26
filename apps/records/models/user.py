@@ -79,6 +79,14 @@ class User(AbstractUser):
             ('reset_student_password', _('Can reset Student\'s password')),
         ]
 
+    def get_full_name(self):
+        full_name = '%s %s' % (self.last_name, self.first_name)
+        return full_name.strip()
+
+    def __str__(self) -> str:
+        """Return full name instead of username"""
+        return self.get_full_name()
+
     def save(self, *args, **kwargs):
         if not self.username:
             self.username = self.generate_username()
@@ -94,11 +102,3 @@ class User(AbstractUser):
             slugify(self.first_name),
             uuid.uuid4().hex[:6]
         )
-
-    def get_full_name(self):
-        full_name = '%s %s' % (self.last_name, self.first_name)
-        return full_name.strip()
-
-    def __str__(self) -> str:
-        """Return full name instead of username"""
-        return self.get_full_name()
