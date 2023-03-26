@@ -159,3 +159,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
 }
+
+
+STUDENTGROUP_MIN_GRADE = env.int('STUDENTGROUP_MIN_GRADE')
+STUDENTGROUP_MAX_GRADE = env.int('STUDENTGROUP_MAX_GRADE')
