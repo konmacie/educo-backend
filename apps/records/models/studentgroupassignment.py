@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
@@ -16,9 +17,10 @@ class StudentGroupAssignmentQuerySet(models.QuerySet):
         return self.select_related('student', 'group')
 
     def filter_by_date(self, date):
+        Q_date_end = Q(date_end__isnull=True) | Q(date_end__gte=date)
         return self.filter(
+            Q_date_end,
             date_start__lte=date,
-            date_end__gte=date,
         )
 
     def current(self):
@@ -28,6 +30,7 @@ class StudentGroupAssignmentQuerySet(models.QuerySet):
     def past(self):
         date = datetime.date.today()
         return self.filter(
+            date_end__isnull=False,
             date_end__lt=date,
         )
 
@@ -91,8 +94,8 @@ class StudentGroupAssignment(models.Model):
 
     date_end = models.DateField(
         _('End date'),
-        blank=False,
-        null=False
+        blank=True,
+        null=True
     )
 
     objects = StudentGroupAssignmentManager()
@@ -102,23 +105,40 @@ class StudentGroupAssignment(models.Model):
         verbose_name_plural = _('group assignments')
 
     def __str__(self):
-        return f"{self.group} ({self.date_start} - {self.date_end})"
+        return f"{self.group} ({self.date_start} - {self.date_end or ''})"
 
     def _get_colliding_assignments(self):
-        qs = StudentGroupAssignment.objects.filter(
-            student=self.student,
-            date_start__lte=self.date_end,
-            date_end__gte=self.date_start
-        ).prefetch_all()
+        qs = StudentGroupAssignment.objects.filter(student=self.student)
         if self.pk:
             qs = qs.exclude(pk=self.pk)
-        return qs
+
+        # if assignment end date is indefinite, look for assignments that
+        # are indefinite OR has end date after/equal this assignment start date
+        if not self.date_end:
+            qs = qs.filter(
+                Q(date_end__isnull=True) | Q(date_end__gte=self.date_start)
+            )
+        # if assignment has end date, look for assignments that
+        # - are indefinite AND has start date before/equal
+        #   this assignment end date
+        #   OR
+        # - have end date before/equal this assignment start date AND
+        #   start date after this assignment end date
+        else:
+            Q_first = Q(date_end__isnull=True)\
+                & Q(date_start__lte=self.date_end)
+            Q_second = Q(date_end__gte=self.date_start)\
+                & Q(date_start__lte=self.date_end)
+            qs = qs.filter(
+                Q_first | Q_second
+            )
+        return qs.prefetch_all()
 
     def clean(self):
         super().clean()
 
         # check if ending date is not earlier than start date
-        if self.date_end < self.date_start:
+        if self.date_end and self.date_end < self.date_start:
             raise ValidationError({
                 'date_end': _(
                     "End date can't be earlier than start date."

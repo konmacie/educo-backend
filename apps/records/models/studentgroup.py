@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.core import validators
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
@@ -39,11 +40,17 @@ class StudentGroupQuerySet(models.QuerySet):
 
     def with_students_count(self):
         date = datetime.date.today()
+        # query for start date before today
+        Q_date_start = Q(assignments__date_start__lte=date)
+        # query for indefinite end date or after today
+        Q_date_end = Q(assignments__date_end__isnull=True)\
+            | Q(assignments__date_end__gte=date)
+
         return self.annotate(
-            students_count=models.Count('assignments', filter=models.Q(
-                assignments__date_start__lte=date,
-                assignments__date_end__gte=date
-            ))
+            students_count=models.Count(
+                'assignments',
+                filter=(Q_date_start & Q_date_end)
+            )
         )
 
 
