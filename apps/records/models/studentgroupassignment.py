@@ -4,8 +4,6 @@ from django.core.exceptions import ValidationError
 
 import datetime
 
-from .student import Student
-
 
 class StudentGroupAssignmentQuerySet(models.QuerySet):
     def prefetch_students(self):
@@ -25,17 +23,50 @@ class StudentGroupAssignmentQuerySet(models.QuerySet):
 
     def current(self):
         date = datetime.date.today()
-        return self.get_by_date(date)
+        return self.filter_by_date(date)
+
+    def past(self):
+        date = datetime.date.today()
+        return self.filter(
+            date_end__lt=date,
+        )
+
+    def future(self):
+        date = datetime.date.today()
+        return self.filter(
+            date_start__gt=date,
+        )
 
 
 class StudentGroupAssignmentManager(models.Manager):
     def get_queryset(self):
         return StudentGroupAssignmentQuerySet(self.model, using=self._db)
 
+    def prefetch_students(self):
+        return self.get_queryset().prefetch_students()
+
+    def prefetch_groups(self):
+        return self.get_queryset().prefetch_groups()
+
+    def prefetch_all(self):
+        return self.get_queryset().prefetch_all()
+
+    def filter_by_date(self, date):
+        return self.get_queryset().filter_by_date(date)
+
+    def current(self):
+        return self.get_queryset().current()
+
+    def past(self):
+        return self.get_queryset().past()
+
+    def future(self):
+        return self.get_queryset().future()
+
 
 class StudentGroupAssignment(models.Model):
     student = models.ForeignKey(
-        to=Student,
+        to='records.Student',
         verbose_name=_("Student"),
         on_delete=models.CASCADE,
         blank=False,
@@ -67,8 +98,8 @@ class StudentGroupAssignment(models.Model):
     objects = StudentGroupAssignmentManager()
 
     class Meta:
-        verbose_name = _('Group Assignment')
-        verbose_name_plural = _('Group Assignments')
+        verbose_name = _('group assignment')
+        verbose_name_plural = _('group assignments')
 
     def __str__(self):
         return f"{self.group} ({self.date_start} - {self.date_end})"

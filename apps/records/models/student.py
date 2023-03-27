@@ -1,11 +1,29 @@
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .user import User, CustomUserManager, Role
+from .studentgroupassignment import StudentGroupAssignment
+
+
+class StudentQuerySet(models.QuerySet):
+    def with_current_group(self):
+        current_assignment = StudentGroupAssignment.objects\
+            .current()\
+            .prefetch_groups()
+
+        return self.prefetch_related(
+            models.Prefetch(
+                'assignments',
+                queryset=current_assignment,
+                to_attr='current_group'
+            )
+        )
 
 
 class StudentManager(CustomUserManager):
     def get_queryset(self):
-        return super().get_queryset().filter(role=Role.STUDENT)
+        return StudentQuerySet(self.model, using=self._db)\
+            .filter(role=Role.STUDENT)
 
 
 class Student(User):
@@ -13,8 +31,11 @@ class Student(User):
 
     class Meta:
         proxy = True
-        verbose_name = _("Student")
-        verbose_name_plural = _("Students")
+        verbose_name = _("student")
+        verbose_name_plural = _("students")
+        permissions = [
+            ('reset_students_password', _('Can reset Student\'s password')),
+        ]
 
     def save(self, *args, **kwargs):
         self.role = Role.STUDENT

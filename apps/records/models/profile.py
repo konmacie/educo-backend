@@ -27,6 +27,10 @@ class Profile(models.Model):
     phone = models.CharField(
         _('Phone number'), max_length=15, blank=True)
 
+    class Meta:
+        verbose_name = _('profile')
+        verbose_name_plural = _('profiles')
+
 
 @receiver(post_save, sender=Student)
 def create_student_profile(sender, instance, created, **kwargs):

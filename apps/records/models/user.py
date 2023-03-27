@@ -71,13 +71,6 @@ class User(AbstractUser):
         verbose_name = _('user')
         verbose_name_plural = _('users')
         ordering = ['last_name', 'first_name']
-        permissions = [
-            ('add_student', _('Can add Student')),
-            ('view_student', _('Can view Student')),
-            ('change_student', _('Can change Student')),
-            ('delete_student', _('Can delete Student')),
-            ('reset_student_password', _('Can reset Student\'s password')),
-        ]
 
     def get_full_name(self):
         full_name = '%s %s' % (self.last_name, self.first_name)

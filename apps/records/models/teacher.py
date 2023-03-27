@@ -13,8 +13,8 @@ class Teacher(User):
 
     class Meta:
         proxy = True
-        verbose_name = _("Teacher")
-        verbose_name_plural = _("Teachers")
+        verbose_name = _("teacher")
+        verbose_name_plural = _("teachers")
 
     def save(self, *args, **kwargs):
         self.role = Role.TEACHER

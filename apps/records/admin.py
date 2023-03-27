@@ -27,6 +27,19 @@ class CustomUserAdmin(UserAdmin):
                    "is_superuser", "is_active", "groups", "role")
 
 
+class StudentAdmin(CustomUserAdmin):
+    list_display = ("username", "email", "first_name",
+                    "last_name", "current_group")
+
+    list_filter = ("is_active", "groups", "role")
+
+    def current_group(self, obj):
+        return obj.current_group
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).with_current_group()
+
+
 class StudentGroupAdmin(admin.ModelAdmin):
     list_display = ('grade', 'name', 'students_count')
     list_display_links = ('grade', 'name')
@@ -52,6 +65,6 @@ class StudentGroupAssignmentAdmin(admin.ModelAdmin):
 #         return initial
 
 admin.site.register(models.Teacher, CustomUserAdmin)
-admin.site.register(models.Student, CustomUserAdmin)
+admin.site.register(models.Student, StudentAdmin)
 admin.site.register(models.StudentGroup, StudentGroupAdmin)
 admin.site.register(models.StudentGroupAssignment, StudentGroupAssignmentAdmin)

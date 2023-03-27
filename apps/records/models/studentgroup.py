@@ -70,8 +70,8 @@ class StudentGroup(models.Model):
     objects = StudentGroupManager()
 
     class Meta:
-        verbose_name = _('Student Group')
-        verbose_name_plural = _('Student Groups')
+        verbose_name = _('student group')
+        verbose_name_plural = _('student groups')
         ordering = ['grade', 'name']
         unique_together = ('grade', 'name')
 
