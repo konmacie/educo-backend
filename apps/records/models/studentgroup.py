@@ -56,7 +56,14 @@ class StudentGroupQuerySet(models.QuerySet):
 
 class StudentGroupManager(models.Manager):
     def get_queryset(self):
-        return StudentGroupQuerySet(self.model, using=self._db)
+        return StudentGroupQuerySet(self.model, using=self._db)\
+            .filter(archived=False)
+
+
+class ArchivedGroupManager(models.Manager):
+    def get_queryset(self):
+        return StudentGroupQuerySet(self.model, using=self._db)\
+            .filter(archived=True)
 
 
 class StudentGroup(models.Model):
@@ -74,13 +81,38 @@ class StudentGroup(models.Model):
         max_length=30,
     )
 
+    archived = models.BooleanField(
+        _("Archived"),
+        default=False,
+        editable=False
+    )
+
     objects = StudentGroupManager()
+    archived_objects = ArchivedGroupManager()
 
     class Meta:
         verbose_name = _('student group')
         verbose_name_plural = _('student groups')
         ordering = ['grade', 'name']
-        unique_together = ('grade', 'name')
+        # unique_together = ('grade', 'name')
 
     def __str__(self):
+        if self.archived:
+            return f'{self.grade}{self.name} [Archived]'
         return f'{self.grade}{self.name}'
+
+    def archive(self, date):
+        # TODO in single Transaction:
+        # - archive courses related to this group
+        # - shorten student assignment to this group
+        # - change archived status
+        pass
+
+
+class ArchivedGroup(StudentGroup):
+    objects = ArchivedGroupManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = _('archived group')
+        verbose_name_plural = _('archived groups')

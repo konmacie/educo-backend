@@ -50,14 +50,22 @@ class StudentAdmin(CustomUserAdmin):
 
 
 class StudentGroupAdmin(admin.ModelAdmin):
-    list_display = ('grade', 'name', 'students_count')
-    list_display_links = ('grade', 'name')
+    list_display = ('__str__', 'grade', 'name', 'students_count')
+    list_display_links = ('__str__',)
 
     def students_count(self, obj):
         return obj.students_count
 
     def get_queryset(self, request):
         return super().get_queryset(request).with_students_count()
+
+
+class ArchivedGroupAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'grade', 'name')
+    list_display_links = ('__str__',)
+
+    def has_add_permission(self, request):
+        return False
 
 
 class AssignmentTimeframeListFilter(admin.SimpleListFilter):
@@ -98,4 +106,5 @@ class StudentGroupAssignmentAdmin(admin.ModelAdmin):
 admin.site.register(models.Teacher, TeacherAdmin)
 admin.site.register(models.Student, StudentAdmin)
 admin.site.register(models.StudentGroup, StudentGroupAdmin)
+admin.site.register(models.ArchivedGroup, ArchivedGroupAdmin)
 admin.site.register(models.StudentGroupAssignment, StudentGroupAssignmentAdmin)
