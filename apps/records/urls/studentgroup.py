@@ -5,6 +5,9 @@ app_name = 'groups'
 urlpatterns = [
     path('', studentgroup.GroupListView.as_view(),
          name='list'),
-    path('<int:pk>/', studentgroup.GroupDetailView.as_view(),
-         name='detail'),
+    path('<int:pk>/', include([
+        path('', studentgroup.GroupDetailView.as_view(),
+             name='detail'),
+        path('assignments/', studentgroup.GroupAssignmentsListView.as_view()),
+    ])),
 ]
