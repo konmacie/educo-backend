@@ -7,7 +7,7 @@ from apps.records.models import StudentGroup, Student
 from apps.records.serializers.studentgroup import StudentGroupSerializer
 from apps.records.serializers.users.student import StudentSerializer
 from apps.records.serializers.studentgroupassignment import (
-    AssignmentWithStudentsSerializer
+    AssignmentWithStudentSerializer
 )
 
 import datetime
@@ -32,7 +32,7 @@ class GroupAssignmentsListView(generics.ListAPIView):
     permission_classes = [records_permissions.user_has_perms([
         "records.view_studentgroup",
     ])]
-    serializer_class = AssignmentWithStudentsSerializer
+    serializer_class = AssignmentWithStudentSerializer
 
     def get_queryset(self):
         group = get_object_or_404(StudentGroup, pk=self.kwargs["pk"])
