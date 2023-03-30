@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'django_filters',
+    "debug_toolbar",
     'apps.records'
 ]
 
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -163,3 +165,8 @@ REST_FRAMEWORK = {
 
 STUDENTGROUP_MIN_GRADE = env.int('STUDENTGROUP_MIN_GRADE')
 STUDENTGROUP_MAX_GRADE = env.int('STUDENTGROUP_MAX_GRADE')
+
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
