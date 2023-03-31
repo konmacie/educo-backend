@@ -19,7 +19,7 @@ class AssignmentWithStudentSerializer(serializers.ModelSerializer):
 
 
 class AssignmentWithGroupSerializer(serializers.ModelSerializer):
-    group = StudentGroupSerializer(many=True, read_only=True)
+    group = StudentGroupSerializer(many=False, read_only=True)
 
     class Meta:
         model = models.StudentGroupAssignment

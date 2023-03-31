@@ -8,7 +8,17 @@ urlpatterns = [
     path('create/', student.StudentCreateView.as_view(), name='create'),
     path(
         '<int:pk>/',
-        student.StudentRetrieveUpdateDestroyView.as_view(),
-        name='retrieve-update-destroy'
+        include([
+            path(
+                '',
+                student.StudentRetrieveUpdateDestroyView.as_view(),
+                name='retrieve-update-destroy'
+            ),
+            path(
+                'assignments/',
+                student.StudentAssignmentListView.as_view(),
+                name='assignments'
+            )
+        ])
     ),
 ]
