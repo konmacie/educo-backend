@@ -6,6 +6,18 @@ from .studentgroupassignment import StudentGroupAssignment
 
 
 class StudentQuerySet(models.QuerySet):
+    def prefetch_profile(self):
+        return self.select_related('profile')
+
+    def prefetch_assignments(self):
+        all_assignments = StudentGroupAssignment.objects.prefetch_groups()
+        return self.prefetch_related(
+            models.Prefetch(
+                'assignments',
+                queryset=all_assignments,
+            )
+        )
+
     def with_current_group(self):
         current_assignment = StudentGroupAssignment.objects\
             .current()\
