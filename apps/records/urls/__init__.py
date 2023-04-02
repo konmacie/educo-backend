@@ -9,4 +9,5 @@ urlpatterns = [
     path('students/', include('apps.records.urls.student',
                               namespace='students')
          ),
+    path('auth/', include('apps.records.urls.auth', namespace='auth'))
 ]
