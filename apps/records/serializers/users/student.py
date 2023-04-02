@@ -9,38 +9,24 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class StudentSerializer(serializers.ModelSerializer):
+class SimpleStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Student
         fields = ['pk', 'first_name', 'last_name']
 
 
-# class StudentWithAssignmentsSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = models.Student
-#         fields = ['pk', 'first_name', 'last_name', 'assignments']
-#         depth = 1
-
-
-class StudentWithCurrentGroupSerializer(serializers.ModelSerializer):
+class StudentSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer(many=False)
     current_group = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Student
-        fields = ['pk', 'first_name', 'last_name', 'current_group']
+        fields = ['pk', 'first_name', 'last_name', 'current_group', 'profile']
 
     def get_current_group(self, obj):
         if hasattr(obj, 'current_group') and obj.current_group:
-            return str(obj.current_group[0].group)
+            return str(obj.current_group)
         return None
-
-
-class StudentWithProfileSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer(many=False)
-
-    class Meta:
-        model = models.Student
-        fields = ['pk', 'first_name', 'last_name', 'profile']
 
     @transaction.atomic
     def create(self, validated_data):

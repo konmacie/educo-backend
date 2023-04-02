@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Concat
 from django.utils.translation import gettext_lazy as _
 
 from .user import User, CustomUserManager, Role
@@ -21,15 +22,12 @@ class StudentQuerySet(models.QuerySet):
     def with_current_group(self):
         current_assignment = StudentGroupAssignment.objects\
             .current()\
-            .prefetch_groups()
+            .with_group_name()\
+            .filter(student=models.OuterRef('pk'))\
 
-        return self.prefetch_related(
-            models.Prefetch(
-                'assignments',
-                queryset=current_assignment,
-                to_attr='current_group'
-            )
-        )
+        return self.annotate(current_group=models.Subquery(
+            current_assignment.values('group_name')
+        ))
 
 
 class StudentManager(CustomUserManager):

@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Concat
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
@@ -21,6 +22,15 @@ class StudentGroupAssignmentQuerySet(models.QuerySet):
         return self.filter(
             Q_date_end,
             date_start__lte=date,
+        )
+
+    def with_group_name(self):
+        return self.prefetch_groups().annotate(
+            group_name=Concat(
+                models.F('group__grade'),
+                models.F('group__name'),
+                output_field=models.CharField()
+            )
         )
 
     def current(self):
@@ -56,6 +66,9 @@ class StudentGroupAssignmentManager(models.Manager):
 
     def filter_by_date(self, date):
         return self.get_queryset().filter_by_date(date)
+
+    def with_group_name(self):
+        return self.get_queryset().with_group_name()
 
     def current(self):
         return self.get_queryset().current()
